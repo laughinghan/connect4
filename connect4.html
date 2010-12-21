@@ -33,10 +33,18 @@ h1, h1+p{
   for(var i = 0; i < 7; i += 1)
     for(var j = 0; j < 6; j += 1)
       paper.circle(50.5 + i*90, 140.5 + j*90, 40);
-  var phantom = $();
+
+  var phantom = $(), board = [[], [], [], [], [], [], []], currentColor = 'red';
   $paper.mousemove(function(e){
     phantom.remove();
-    phantom = paper.circle(50.5 + 90*~~(e.offsetX/90), 40.5, 40);
+    var i = ~~((e.offsetX-5)/90);
+    if(i === 7) i = 6; //the rightmost edge of the board
+    phantom = paper.circle(50.5 + i*90, 40.5, 40).attr({stroke: 'none', fill: currentColor});
+  }).mouseleave(function(){
+    phantom.remove();
+  }).click(function(){
+    phantom.clone().animate({cy: 140.5 + 5*90}, 1000, 'bounce');
+    phantom.remove();
   });
 }());
 </script>
