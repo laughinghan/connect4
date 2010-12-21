@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Connect 4</title>
+
+<script src="../jquery.js"></script>
+<script src="../raphael/raphael.js"></script>
+
+<style type="text/css">
+body{
+  width:641px;
+  margin:0 auto;
+}
+h1, h1+p{
+  margin:0;
+}
+</style>
+
+</head>
+<body>
+
+<h1>Connect 4</h1>
+
+<p>by <a href="http://github.com/laughinghan">Han</a>
+
+<div id="paper"></div>
+
+<script type="text/javascript">
+(function(){
+  var paper = Raphael('paper', 641, 641), $paper = $('#paper');
+  paper.rect(.5, 90.5, 640, 550)
+  for(var i = 0; i < 7; i += 1)
+    for(var j = 0; j < 6; j += 1)
+      paper.circle(50.5 + i*90, 140.5 + j*90, 40);
+  var phantom = $();
+  $paper.mousemove(function(e){
+    phantom.remove();
+    phantom = paper.circle(50.5 + 90*~~(e.offsetX/90), 40.5, 40);
+  });
+}());
+</script>
+
+</body>
+</html>
