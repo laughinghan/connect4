@@ -28,23 +28,26 @@ h1, h1+p{
 
 <script type="text/javascript">
 (function(){
+  var swap = {red: 'yellow', yellow: 'red'};
+
   var paper = Raphael('paper', 641, 641), $paper = $('#paper');
   paper.rect(.5, 90.5, 640, 550)
   for(var i = 0; i < 7; i += 1)
     for(var j = 0; j < 6; j += 1)
       paper.circle(50.5 + i*90, 140.5 + j*90, 40);
 
-  var phantom = $(), board = [[], [], [], [], [], [], []], currentColor = 'red';
+  var phantom = $(), i, board = [[], [], [], [], [], [], []], currentColor = 'red';
   $paper.mousemove(function(e){
     phantom.remove();
-    var i = ~~((e.offsetX-5)/90);
+    i = ~~((e.offsetX-5)/90);
     if(i === 7) i = 6; //the rightmost edge of the board
     phantom = paper.circle(50.5 + i*90, 40.5, 40).attr({stroke: 'none', fill: currentColor});
   }).mouseleave(function(){
     phantom.remove();
   }).click(function(){
-    phantom.clone().animate({cy: 140.5 + 5*90}, 1000, 'bounce');
+    board[i].push(phantom.clone().animate({cy: 140.5 + (5-board[i].length)*90}, 1000, 'bounce'));
     phantom.remove();
+    currentColor = swap[currentColor];
   });
 }());
 </script>
