@@ -8,12 +8,24 @@
 <script src="../raphael/raphael.js"></script>
 
 <style type="text/css">
-body{
-  width:641px;
-  margin:0 auto;
+body {
+  width: 641px;
+  margin: 0 auto;
 }
-h1, h1+p{
-  margin:0;
+h1, h1+p {
+  margin: 0;
+}
+h2 {
+  margin-top: -50%;
+  text-align: center;
+}
+h2 span {
+  padding: 1em;
+  border-radius: 1em;
+  font-size: 200%;
+  background-color: black;
+  color: white;
+  opacity: .8;
 }
 </style>
 
@@ -37,7 +49,7 @@ h1, h1+p{
       paper.circle(50.5 + i*90, 140.5 + j*90, 40);
 
   //global state
-  var currentColor = 'red', board = [[], [], [], [], [], [], []], column,
+  var currentColor = 'Red', board = [[], [], [], [], [], [], []], column, colNum,
     phantom = paper.circle(-40.5, 40.5, 40).attr({
       stroke: 'none',
       fill: currentColor
@@ -45,16 +57,16 @@ h1, h1+p{
 
   //event handlers
   $('#paper').mousemove(function(e){
-    var col = ~~((e.offsetX-5)/90);
-    if(col === 7) col = 6; //can't be past rightmost edge of the board
+    colNum = ~~((e.offsetX-5)/90);
+    if(colNum === 7) colNum = 6; //can't be past rightmost edge of the board
 
-    column = board[col];
+    column = board[colNum];
 
     //hide piece if column is full
     if(columnIsFull())
       hidePhantom();
     else
-      phantom.attr('cx', 50.5 + col*90);
+      phantom.attr('cx', 50.5 + colNum*90);
   })
   .mouseleave(hidePhantom)
   .click(function(){
@@ -66,19 +78,37 @@ h1, h1+p{
     var drop = 5 - column.length;
 
     //add piece to column
-    column.push(phantom.clone()
-      .animate(
-        {
-          cy: 140.5 + drop*90
-        },
-        500 + drop*100,
-        'bounce'
-      )
-    );
+    column.push(currentColor);
+    phantom.clone().animate({cy: 140.5 + drop*90}, 500 + drop*100, 'bounce');
 
     //hide next piece if column is now full
     if(columnIsFull())
       hidePhantom();
+
+    //check for a Connect Four
+    var axes = [0, 0, 0, 0];
+    for(var colDir = -1; colDir <= 1; colDir += 1)
+      for(var rowDir = -1; rowDir <= 1; rowDir += 1)
+        if(colDir || rowDir)
+          for(var col = colNum + colDir, row = column.length - 1 + rowDir; col >= 0 && col < 7 && row >= 0 && row < 6; col += colDir, row += rowDir)
+            if(board[col][row] === currentColor){
+              axes[1 + (colDir*rowDir || 2*colDir*colDir)] += 1;
+              if(axes[1 + (colDir*rowDir || 2*colDir*colDir)] === 3){
+                $(this).append('<h2><span>' + currentColor + ' Wins!</span></h2>');
+                paper.rect(
+                  Math.min(50.5 + col*90, 50.5 + (1 + col - 4*colDir)*90) - 45,
+                  Math.min(140.5 + (6 - row)*90, 140.5 + (5 - row + 3*rowDir)*90) - 45,
+                  (4*colDir*colDir || 1)*90,
+                  (4*rowDir*rowDir || 1)*90,
+                  45
+                ).attr({
+                  stroke: 'cyan',
+                  'stroke-width': 4
+                });
+                return;
+              }
+            }else
+              break;
 
     //swap color
     phantom.attr('fill', currentColor = swap[currentColor]);
@@ -86,7 +116,7 @@ h1, h1+p{
   .mousedown(false); //prevent annoying double-click-selects text thing
 
   //utils
-  var swap = {red: 'yellow', yellow: 'red'};
+  var swap = {Red: 'Yellow', Yellow: 'Red'};
   function columnIsFull(){
     return column.length === 6;
   }
