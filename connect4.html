@@ -28,27 +28,71 @@ h1, h1+p{
 
 <script type="text/javascript">
 (function(){
-  var swap = {red: 'yellow', yellow: 'red'};
+  var paper = Raphael('paper', 641, 641);
 
-  var paper = Raphael('paper', 641, 641), $paper = $('#paper');
+  //draw grid
   paper.rect(.5, 90.5, 640, 550)
   for(var i = 0; i < 7; i += 1)
     for(var j = 0; j < 6; j += 1)
       paper.circle(50.5 + i*90, 140.5 + j*90, 40);
 
-  var phantom = $(), i, board = [[], [], [], [], [], [], []], currentColor = 'red';
-  $paper.mousemove(function(e){
-    phantom.remove();
-    i = ~~((e.offsetX-5)/90);
-    if(i === 7) i = 6; //the rightmost edge of the board
-    phantom = paper.circle(50.5 + i*90, 40.5, 40).attr({stroke: 'none', fill: currentColor});
-  }).mouseleave(function(){
-    phantom.remove();
-  }).click(function(){
-    board[i].push(phantom.clone().animate({cy: 140.5 + (5-board[i].length)*90}, 1000, 'bounce'));
-    phantom.remove();
-    currentColor = swap[currentColor];
-  });
+  //global state
+  var currentColor = 'red', board = [[], [], [], [], [], [], []], column,
+    phantom = paper.circle(-40.5, 40.5, 40).attr({
+      stroke: 'none',
+      fill: currentColor
+    });
+
+  //event handlers
+  $('#paper').mousemove(function(e){
+    var col = ~~((e.offsetX-5)/90);
+    if(col === 7) col = 6; //can't be past rightmost edge of the board
+
+    column = board[col];
+
+    //hide piece if column is full
+    if(columnIsFull())
+      hidePhantom();
+    else
+      phantom.attr('cx', 50.5 + col*90);
+  })
+  .mouseleave(hidePhantom)
+  .click(function(){
+    //ignore click if column is full
+    if(columnIsFull())
+      return;
+
+    //drop distance, i.e. distance piece falls
+    var drop = 5 - column.length;
+
+    //add piece to column
+    column.push(phantom.clone()
+      .animate(
+        {
+          cy: 140.5 + drop*90
+        },
+        500 + drop*100,
+        'bounce'
+      )
+    );
+
+    //hide next piece if column is now full
+    if(columnIsFull())
+      hidePhantom();
+
+    //swap color
+    phantom.attr('fill', currentColor = swap[currentColor]);
+  })
+  .mousedown(false); //prevent annoying double-click-selects text thing
+
+  //utils
+  var swap = {red: 'yellow', yellow: 'red'};
+  function columnIsFull(){
+    return column.length === 6;
+  }
+  function hidePhantom(){
+    phantom.attr('cx', -40.5);
+  }
 }());
 </script>
 
