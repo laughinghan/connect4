@@ -12,29 +12,43 @@ body {
   width: 641px;
   margin: 0 auto;
 }
-h1, h1+p {
+#title *, h2 {
   margin: 0;
 }
+#title {
+  float: left;
+}
 h2 {
-  margin-top: -50%;
+  text-align: right;
+  padding: .5em;
+}
+div h2 {
+  margin-top: -70%;
   text-align: center;
 }
-h2 span {
+div h2 span {
+  display: inline-block;
   padding: 1em;
   border-radius: 1em;
   font-size: 200%;
-  background-color: black;
+  background: rgba(0, 0, 0, .8);
   color: white;
-  opacity: .8;
+}
+div h2 a {
+  font-size: 50%;
+  color: #06F;
 }
 </style>
 
 </head>
 <body>
 
-<h1>Connect 4</h1>
+<div id="title">
+  <h1>Connect 4</h1>
+  <p>by <a href="http://github.com/laughinghan">Han</a>
+</div>
 
-<p>by <a href="http://github.com/laughinghan">Han</a>
+<h2><a href="">New Game</a></h2>
 
 <div id="paper"></div>
 
@@ -94,17 +108,23 @@ h2 span {
             if(board[col][row] === currentColor){
               axes[1 + (colDir*rowDir || 2*colDir*colDir)] += 1;
               if(axes[1 + (colDir*rowDir || 2*colDir*colDir)] === 3){
-                $(this).append('<h2><span>' + currentColor + ' Wins!</span></h2>');
+                phantom.remove();
+
+                //circle the Connect Four
+                var sqrt2 = rowDir*colDir ? Math.SQRT2 : 1;
                 paper.rect(
-                  Math.min(50.5 + col*90, 50.5 + (1 + col - 4*colDir)*90) - 45,
-                  Math.min(140.5 + (6 - row)*90, 140.5 + (5 - row + 3*rowDir)*90) - 45,
-                  (4*colDir*colDir || 1)*90,
-                  (4*rowDir*rowDir || 1)*90,
+                  50.5 + (col - (1.5*sqrt2 + 1.5*colDir))*90 - 45, //x
+                  140.5 + (5 - row + 1.5*rowDir)*90 - 45, //y
+                  sqrt2*3*90 + 90, //width
+                  90, //height -- will be rotated
                   45
                 ).attr({
                   stroke: 'cyan',
-                  'stroke-width': 4
+                  'stroke-width': 6,
+                  rotation: Raphael.deg(Math.atan2(-rowDir, colDir))
                 });
+
+                $(this).append('<h2><span>' + currentColor + ' Wins!<br><a href="">New Game</a></span></h2>');
                 return;
               }
             }else
