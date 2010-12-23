@@ -77,7 +77,7 @@ $(function(){
   });
   paperDiv.mousemove(function(e){
     colNum = ~~((e.clientX - paperOffsetLeft - 5)/90);
-    if(colNum === 7) //can't be past rightmost edge of the board
+    if(colNum > 6) //can't be past rightmost column
       colNum = 6;
 
     column = board[colNum];
