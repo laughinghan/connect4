@@ -95,6 +95,8 @@ h2 span {
               axes[1 + (colDir*rowDir || 2*colDir*colDir)] += 1;
               if(axes[1 + (colDir*rowDir || 2*colDir*colDir)] === 3){
                 $(this).append('<h2><span>' + currentColor + ' Wins!</span></h2>');
+                phantom.remove();
+
                 //circle the Connect Four
                 var sqrt2 = rowDir*colDir ? Math.SQRT2 : 1;
                 paper.rect(
