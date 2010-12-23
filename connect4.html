@@ -95,15 +95,18 @@ h2 span {
               axes[1 + (colDir*rowDir || 2*colDir*colDir)] += 1;
               if(axes[1 + (colDir*rowDir || 2*colDir*colDir)] === 3){
                 $(this).append('<h2><span>' + currentColor + ' Wins!</span></h2>');
+                //circle the Connect Four
+                var sqrt2 = rowDir*colDir ? Math.SQRT2 : 1;
                 paper.rect(
-                  Math.min(50.5 + col*90, 50.5 + (1 + col - 4*colDir)*90) - 45,
-                  Math.min(140.5 + (6 - row)*90, 140.5 + (5 - row + 3*rowDir)*90) - 45,
-                  (4*colDir*colDir || 1)*90,
-                  (4*rowDir*rowDir || 1)*90,
+                  50.5 + (col - (1.5*sqrt2 + 1.5*colDir))*90 - 45, //x
+                  140.5 + (5 - row + 1.5*rowDir)*90 - 45, //y
+                  sqrt2*3*90 + 90, //width
+                  90, //height -- will be rotated
                   45
                 ).attr({
                   stroke: 'cyan',
-                  'stroke-width': 4
+                  'stroke-width': 6,
+                  rotation: Raphael.deg(Math.atan2(-rowDir, colDir))
                 });
                 return;
               }
