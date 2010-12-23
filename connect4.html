@@ -62,7 +62,8 @@ $(function(){
     paperDiv = $('#paper'), paperOffsetLeft;
 
   //game state
-  var currentColor = 'Red', board = [[], [], [], [], [], [], []], column, colNum;
+  var currentColor = 'Red', board = [[], [], [], [], [], [], []], column, colNum,
+    total = 0; //total number of pieces in the board
 
   //draw the grid
   var prev_size,
@@ -167,6 +168,11 @@ $(function(){
               }
             }else
               break;
+
+    total += 1;
+    if(total === 42)
+      $(this).append('<h2><span>Tie!<br><a href="">New Game</a></span></h2>');
+    else
 
     //swap color
     phantom.attr('fill', currentColor = swap[currentColor]);
