@@ -72,7 +72,7 @@ div h2 a {
 
   //event handlers
   $('#paper').mousemove(function(e){
-    colNum = ~~((e.offsetX-5)/90);
+    colNum = ~~((e.clientX - $(this).offset().left - 5)/90);
     if(colNum === 7) colNum = 6; //can't be past rightmost edge of the board
 
     column = board[colNum];
