@@ -54,10 +54,10 @@ div h2 a {
 <div id="paper"></div>
 
 <script type="text/javascript">
-(function(){
+$(function(){
   var paper = Raphael('paper', 641, 641);
 
-  //draw grid
+  //draw the grid
   paper.rect(.5, 90.5, 640, 550)
   for(var i = 0; i < 7; i += 1)
     for(var j = 0; j < 6; j += 1)
@@ -71,9 +71,14 @@ div h2 a {
     });
 
   //event handlers
-  $('#paper').mousemove(function(e){
-    colNum = ~~((e.clientX - $(this).offset().left - 5)/90);
-    if(colNum === 7) colNum = 6; //can't be past rightmost edge of the board
+  var paperDiv = $('#paper'), paperOffsetLeft = paperDiv.offset().left;
+  $(window).resize(function(){
+    paperOffsetLeft = paperDiv.offset().left;
+  });
+  paperDiv.mousemove(function(e){
+    colNum = ~~((e.clientX - paperOffsetLeft - 5)/90);
+    if(colNum === 7) //can't be past rightmost edge of the board
+      colNum = 6;
 
     column = board[colNum];
 
@@ -90,7 +95,7 @@ div h2 a {
       return;
 
     //drop distance, i.e. distance piece falls
-    var drop = 5 - column.length;
+    var rowNum = column.length, drop = 5 - rowNum;
 
     //add piece to column
     column.push(currentColor);
@@ -105,7 +110,7 @@ div h2 a {
     for(var colDir = -1; colDir <= 1; colDir += 1)
       for(var rowDir = -1; rowDir <= 1; rowDir += 1)
         if(colDir || rowDir)
-          for(var col = colNum + colDir, row = column.length - 1 + rowDir; col >= 0 && col < 7 && row >= 0 && row < 6; col += colDir, row += rowDir)
+          for(var col = colNum + colDir, row = rowNum + rowDir; col >= 0 && col < 7 && row >= 0 && row < 6; col += colDir, row += rowDir)
             if(board[col][row] === currentColor){
               axes[1 + (colDir*rowDir || 2*colDir*colDir)] += 1;
               if(axes[1 + (colDir*rowDir || 2*colDir*colDir)] === 3){
@@ -144,7 +149,7 @@ div h2 a {
   function hidePhantom(){
     phantom.attr('cx', -40.5);
   }
-}());
+});
 </script>
 
 </body>
