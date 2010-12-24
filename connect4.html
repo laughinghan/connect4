@@ -148,6 +148,7 @@ $(function(){
               axes[1 + (colDir*rowDir || 2*colDir*colDir)] += 1;
               if(axes[1 + (colDir*rowDir || 2*colDir*colDir)] === 3){
                 phantom.remove();
+                paperDiv.unbind();
 
                 //circle the Connect Four
                 var sqrt2 = rowDir*colDir ? Math.SQRT2 : 1;
