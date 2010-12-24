@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Connect 4</title>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.js"></script>
+
+<style type="text/css">
+body {
+  max-width: 641px;
+  margin: 0 auto;
+}
+#title *, h2 {
+  margin: 0;
+}
+#title {
+  float: left;
+}
+h2 {
+  text-align: right;
+  padding: .5em;
+}
+#paper {
+  clear: both;
+  position: relative;
+}
+#paper h2 {
+  top: 20%;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
+#paper h2 span {
+  display: inline-block;
+  padding: 1em;
+  border-radius: 1em;
+  font-size: 200%;
+  background: black;
+  background: rgba(0, 0, 0, .8);
+  color: white;
+}
+#paper h2 a {
+  font-size: 50%;
+  color: #06F;
+}
+.shape {
+  position: absolute;
+  border: 1px solid black;
+}
+</style>
+
+</head>
+<body>
+
+<div id="title">
+  <h1>Connect 4</h1>
+  <p>by <a href="http://github.com/laughinghan">Han</a>
+</div>
+
+<h2><a href="">New Game</a></h2>
+
+<div id="paper"></div>
+
+<script type="text/javascript">
+$(function(){
+  var paperDiv = $('#paper'), paperOffsetLeft;
+
+  //game state
+  var currentColor = 'Red', board = [[], [], [], [], [], [], []], column, colNum,
+    total = 0; //total number of pieces in the board
+
+  //draw the grid
+  var prev_size,
+    radius, //radius of circles
+    space, //space between circles in grid
+    topMargin, //distance from top edge of paper to topmost circles
+    leftMargin, //distance from left edge of paper to leftmost circles
+    phantom; //piece that follows mouse
+  function adjustSize(){
+    var win = $(window), paperOffset = paperDiv.offset(),
+      size = Math.min(win.width(), win.height() - paperOffset.top - 5);
+    paperOffsetLeft = paperOffset.left;
+
+    if(size === prev_size)
+      return;
+    prev_size = size;
+
+    paperDiv.empty().width(size).height(size);
+
+    radius = size*40/640;
+    space = size*90/640;
+    leftMargin = size*50/640;
+    topMargin = leftMargin + space;
+
+    $('<div class="shape"></div>').css({
+      left: 1,
+      top: space - 1,
+      width: size,
+      height: size*550/640
+    }).appendTo(paperDiv);
+
+    for(var i = 0; i < 7; i += 1)
+      for(var j = 0; j < 6; j += 1)
+        circle(leftMargin + i*space, topMargin + j*space, radius) &&
+          board[i][j] &&
+            circle(leftMargin + i*space, topMargin + (5 - j)*space, radius).css({
+              border: 'none',
+              background: board[i][j]
+            });
+
+    phantom = circle(0, radius, radius).css({
+      border: 'none',
+      backgroundColor: currentColor
+    }).hide();
+  }
+  adjustSize();
+
+  //event handlers
+  $(window).resize(adjustSize);
+  paperDiv.mousemove(function(e){
+    colNum = ~~((e.clientX - paperOffsetLeft + radius - space/2)/space);
+    if(colNum > 6) //can't be past rightmost column
+      colNum = 6;
+
+    column = board[colNum];
+
+    //hide piece if column is full
+    if(columnIsFull())
+      hidePhantom();
+    else
+      phantom.css('left', leftMargin + colNum*space - radius + 1).show();
+  })
+  .mouseleave(hidePhantom)
+  .click(function(){
+    //ignore click if column is full
+    if(columnIsFull())
+      return;
+
+    //drop distance, i.e. distance piece falls
+    var rowNum = column.length, drop = 5 - rowNum;
+
+    //add piece to column
+    column.push(currentColor);
+    phantom.clone().appendTo(paperDiv).animate({top: topMargin + drop*space - radius + 1}, 200 + drop*50);
+
+    //hide next piece if column is now full
+    if(columnIsFull())
+      hidePhantom();
+
+    //check for a Connect Four
+    var axes = [0, 0, 0, 0];
+    for(var colDir = -1; colDir <= 1; colDir += 1)
+      for(var rowDir = -1; rowDir <= 1; rowDir += 1)
+        if(colDir || rowDir)
+          for(var col = colNum + colDir, row = rowNum + rowDir; col >= 0 && col < 7 && row >= 0 && row < 6; col += colDir, row += rowDir)
+            if(board[col][row] === currentColor){
+              axes[1 + (colDir*rowDir || 2*colDir*colDir)] += 1;
+              if(axes[1 + (colDir*rowDir || 2*colDir*colDir)] === 3){
+                phantom.remove();
+                phantom = $();
+
+                //circle the Connect Four
+                paperDiv.children(':eq('+(1+col*6+5-row)+'),:eq('+(1+(col-colDir)*6+5-row+rowDir)+'),'+
+                  ':eq('+(1+(col-2*colDir)*6+5-row+2*rowDir)+'),:eq('+(1+(col-3*colDir)*6+5-row+3*rowDir)+')')
+                  .css({
+                    borderColor: 'cyan',
+                    borderWidth: 6,
+                    borderRadius: radius + 3,
+                    left: function(i, v){ return parseFloat(v) - 4; },
+                    top: function(i, v){ return parseFloat(v) - 4; }
+                  });
+
+                $(this).append('<h2><span>' + currentColor + ' Wins!<br><a href="">New Game</a></span></h2>');
+                return;
+              }
+            }else
+              break;
+
+    total += 1;
+    if(total === 42)
+      $(this).append('<h2><span>Tie!<br><a href="">New Game</a></span></h2>');
+    else
+
+    //swap color
+    phantom.css('background', currentColor = swap[currentColor]);
+  })
+  .mousedown(false); //prevent annoying double-click-selects text thing
+
+  //utils
+  var swap = {Red: 'Yellow', Yellow: 'Red'};
+  function columnIsFull(){
+    return column.length === 6;
+  }
+  function hidePhantom(){
+    phantom.hide();
+  }
+  function circle(x, y, r){
+    return $('<div class="shape"></div>').css({
+      left: x - r,
+      top: y - r,
+      width: 2*r,
+      height: 2*r,
+      borderRadius: r
+    }).appendTo(paperDiv);
+  }
+});
+</script>
+
+</body>
+</html>
