@@ -158,7 +158,7 @@ $(function(){
               axes[1 + (colDir*rowDir || 2*colDir*colDir)] += 1;
               if(axes[1 + (colDir*rowDir || 2*colDir*colDir)] === 3){
                 phantom.remove();
-                phantom = $();
+                paperDiv.unbind();
 
                 //circle the Connect Four
                 paperDiv.children(':eq('+(1+col*6+5-row)+'),:eq('+(1+(col-colDir)*6+5-row+rowDir)+'),'+
