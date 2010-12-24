@@ -21,14 +21,17 @@ h2 {
   text-align: right;
   padding: .5em;
 }
-div {
+#paper {
   clear: both;
+  position: relative;
 }
-div h2 {
-  margin-top: -70%;
+#paper h2 {
+  top: 20%;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
-div h2 span {
+#paper h2 span {
   display: inline-block;
   padding: 1em;
   border-radius: 1em;
@@ -37,9 +40,13 @@ div h2 span {
   background: rgba(0, 0, 0, .8);
   color: white;
 }
-div h2 a {
+#paper h2 a {
   font-size: 50%;
   color: #06F;
+}
+.shape {
+  position: absolute;
+  border: 1px solid black;
 }
 </style>
 
@@ -57,8 +64,7 @@ div h2 a {
 
 <script type="text/javascript">
 $(function(){
-  var paper = Raphael('paper', 0, 0),
-    paperDiv = $('#paper'), paperOffsetLeft;
+  var paperDiv = $('#paper'), paperOffsetLeft;
 
   //game state
   var currentColor = 'Red', board = [[], [], [], [], [], [], []], column, colNum,
@@ -80,28 +86,33 @@ $(function(){
       return;
     prev_size = size;
 
-    paper.clear().setSize(size, size);
-    size -= 1; //extra pixel for all the .5's
+    paperDiv.empty().width(size).height(size);
 
     radius = size*40/640;
     space = size*90/640;
-    leftMargin = .5 + size*50/640;
+    leftMargin = size*50/640;
     topMargin = leftMargin + space;
 
-    paper.rect(.5, space + .5, size, size*550/640);
+    $('<div class="shape"></div>').css({
+      left: 1,
+      top: space - 1,
+      width: size,
+      height: size*550/640
+    }).appendTo(paperDiv);
+
     for(var i = 0; i < 7; i += 1)
       for(var j = 0; j < 6; j += 1)
-        paper.circle(leftMargin + i*space, topMargin + j*space, radius) &&
+        circle(leftMargin + i*space, topMargin + j*space, radius) &&
           board[i][j] &&
-            paper.circle(leftMargin + i*space, topMargin + (5 - j)*space, radius).attr({
-              stroke: 'none',
-              fill: board[i][j]
-            })
+            circle(leftMargin + i*space, topMargin + (5 - j)*space, radius).css({
+              border: 'none',
+              background: board[i][j]
+            });
 
-    phantom = paper.circle(-.5 - radius, .5 + radius, radius).attr({
-      stroke: 'none',
-      fill: currentColor
-    });
+    phantom = circle(0, radius, radius).css({
+      border: 'none',
+      backgroundColor: currentColor
+    }).hide();
   }
   adjustSize();
 
@@ -118,7 +129,7 @@ $(function(){
     if(columnIsFull())
       hidePhantom();
     else
-      phantom.attr('cx', leftMargin + colNum*space);
+      phantom.css('left', leftMargin + colNum*space - radius + 1).show();
   })
   .mouseleave(hidePhantom)
   .click(function(){
@@ -131,7 +142,7 @@ $(function(){
 
     //add piece to column
     column.push(currentColor);
-    phantom.clone().animate({cy: topMargin + drop*space}, 500 + drop*100, 'bounce');
+    phantom.clone().appendTo(paperDiv).animate({top: topMargin + drop*space - radius + 1}, 200 + drop*50);
 
     //hide next piece if column is now full
     if(columnIsFull())
@@ -147,20 +158,18 @@ $(function(){
               axes[1 + (colDir*rowDir || 2*colDir*colDir)] += 1;
               if(axes[1 + (colDir*rowDir || 2*colDir*colDir)] === 3){
                 phantom.remove();
+                phantom = $();
 
                 //circle the Connect Four
-                var sqrt2 = rowDir*colDir ? Math.SQRT2 : 1;
-                paper.rect(
-                  leftMargin + (col - (1.5*sqrt2 + 1.5*colDir))*space - space/2, //x
-                  topMargin + (5 - row + 1.5*rowDir)*space - space/2, //y
-                  sqrt2*3*space + space, //width
-                  space, //height -- will be rotated
-                  space/2
-                ).attr({
-                  stroke: 'cyan',
-                  'stroke-width': 6,
-                  rotation: Raphael.deg(Math.atan2(-rowDir, colDir))
-                });
+                paperDiv.children(':eq('+(1+col*6+5-row)+'),:eq('+(1+(col-colDir)*6+5-row+rowDir)+'),'+
+                  ':eq('+(1+(col-2*colDir)*6+5-row+2*rowDir)+'),:eq('+(1+(col-3*colDir)*6+5-row+3*rowDir)+')')
+                  .css({
+                    borderColor: 'cyan',
+                    borderWidth: 6,
+                    borderRadius: radius + 3,
+                    left: function(i, v){ return parseFloat(v) - 4; },
+                    top: function(i, v){ return parseFloat(v) - 4; }
+                  });
 
                 $(this).append('<h2><span>' + currentColor + ' Wins!<br><a href="">New Game</a></span></h2>');
                 return;
@@ -174,7 +183,7 @@ $(function(){
     else
 
     //swap color
-    phantom.attr('fill', currentColor = swap[currentColor]);
+    phantom.css('background', currentColor = swap[currentColor]);
   })
   .mousedown(false); //prevent annoying double-click-selects text thing
 
@@ -184,7 +193,16 @@ $(function(){
     return column.length === 6;
   }
   function hidePhantom(){
-    phantom.attr('cx', -.5 - radius);
+    phantom.hide();
+  }
+  function circle(x, y, r){
+    return $('<div class="shape"></div>').css({
+      left: x - r,
+      top: y - r,
+      width: 2*r,
+      height: 2*r,
+      borderRadius: r
+    }).appendTo(paperDiv);
   }
 });
 </script>
